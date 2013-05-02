@@ -14,10 +14,10 @@ type
   TMainForm = class(TForm)
     SettingsButton: TButton;
     volumeMeter: TProgressBar;
-    procedure FormCreate(Sender: TObject);
     procedure SettingsButtonClick(Sender: TObject);
   public
-    procedure OnSubjectChange(var msg: TMessage); message kSubjectChanged;
+    procedure OnSubjectChange(var msg: TPercentMessage); message kSubjectChanged;
+    procedure OnCtrlFormClose(Sender: TObject; var CloseAction: TCloseAction);
   end;
 
 
@@ -34,19 +34,23 @@ procedure TMainForm.SettingsButtonClick(Sender: TObject);
   begin
     if SettingsButton.Enabled then
       begin
+       // it's okay to add the observer multiple times, so we'll do it here.
+      CtrlForm.percent.asSubject.addObserver(Self);
+      CtrlForm.OnClose := @OnCtrlFormClose;
       SettingsButton.Enabled := False;
       CtrlForm.Show;
       end;
   end;
 
-procedure TMainForm.OnSubjectChange(var msg: TMessage);
+procedure TMainForm.OnCtrlFormClose(Sender: TObject; var CloseAction: TCloseAction);
   begin
-    volumeMeter.Position := (msg.Data as TPercentModel).value;
+    CloseAction := caHide;
+    SettingsButton.Enabled := True;
   end;
 
-procedure TMainForm.FormCreate(Sender: TObject);
+procedure TMainForm.OnSubjectChange(var msg: TPercentMessage);
   begin
-    CtrlForm.percent.addObserver(Self);
+    volumeMeter.Position := msg.data
   end;
 
 end.

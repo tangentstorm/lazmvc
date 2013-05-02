@@ -1,3 +1,4 @@
+{ unit that implements the observer pattern with generics  }
 unit uModel;
 
 {$mode objfpc}{$H+}{$M+}
@@ -5,6 +6,26 @@ unit uModel;
 interface
 
 uses Classes, SysUtils, contnrs;
+
+{Copyright (c) 2013 Michal J Wallace
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.}
 
 {%region -- Protocol --------------------------------------------------------- }
 type
@@ -15,10 +36,10 @@ type
   end;
 
   { Notifications are done through message methods and TMessage }
-    TMessage = record
-      id   : string;
-      data : IObservable;
-    end;
+  generic GMessage<t> = record
+    id   : string[16];
+    data : t;
+  end;
 
   { here is the message to listen for }
   const
@@ -35,7 +56,7 @@ type
     constructor Create;
   private
     fAsSubject : IObservable;
-    procedure Notify;
+    procedure Notify( var msg );
   public
     property asSubject: IObservable read fAsSubject implements IObservable;
   end;
@@ -45,6 +66,7 @@ type
   private
     _value : t;
     procedure SetValue( val : t );
+    type TTMessage = specialize GMessage<t>;
   public
     constructor Create( val : t );
     property value : t read _value write SetValue;
@@ -53,7 +75,8 @@ type
 
 {%region -- Example : TPercentModel -------------------------------------------}
 TPercent = 0 .. 100;
-TPercentModel = specialize GModel<TPercent>;
+TPercentModel   = specialize GModel<TPercent>;
+TPercentMessage = specialize GMessage<TPercent>;
 {%endregion}
 
 
@@ -70,7 +93,7 @@ type
     fSubject  : TObject;
     procedure AddObserver(obj: TObject);
     procedure RemoveObserver(obj: TObject);
-    procedure Notify( msgid : Cardinal );
+    procedure Notify( var msg );
   end;
 
 constructor _TSubject.Create( subj : TObject );
@@ -81,7 +104,8 @@ constructor _TSubject.Create( subj : TObject );
 
 procedure _TSubject.AddObserver(obj: TObject);
   begin
-    fObservers.Add(obj);
+    if fObservers.IndexOf(obj) = -1 then fObservers.Add(obj);
+    writeln('there are now ', fObservers.Count, ' observers');
   end;
 
 procedure _TSubject.RemoveObserver(obj : TObject);
@@ -89,10 +113,9 @@ procedure _TSubject.RemoveObserver(obj : TObject);
     fObservers.Extract(obj);
   end;
 
-procedure _TSubject.Notify( msgid : cardinal );
-  var ob : Pointer; msg : TMessage;
+procedure _TSubject.Notify( var msg );
+  var ob : Pointer;
   begin
-    msg.id := kSubjectChanged; msg.data := self;
     for ob in fObservers do TObject(ob).DispatchStr( msg );
   end;
 
@@ -109,9 +132,9 @@ constructor TModel.Create;
     fAsSubject := _TSubject.Create( self )
   end;
 
-procedure TModel.notify;
+procedure TModel.notify( var msg );
   begin
-    (fAsSubject as _TSubject).Notify( 1 );
+    (fAsSubject as _TSubject).Notify( msg );
   end;
 {%endregion}
 
@@ -123,9 +146,12 @@ constructor GModel.Create( val : t );
   end;
 
 procedure GModel.SetValue( val : t );
+  var msg : TTMessage;
   begin
     _value := val;
-    notify
+    msg.id := kSubjectChanged;
+    msg.data := self.value;
+    notify( msg )
   end;
 {%endregion}
 

@@ -6,7 +6,6 @@ object MainForm: TMainForm
   Caption = 'MainForm'
   ClientHeight = 126
   ClientWidth = 216
-  OnCreate = FormCreate
   LCLVersion = '1.0.8.0'
   object volumeMeter: TProgressBar
     Left = 8
@@ -22,7 +21,7 @@ object MainForm: TMainForm
     Height = 26
     Top = 96
     Width = 80
-    Caption = 'SettingsButton'
+    Caption = 'Settings...'
     OnClick = SettingsButtonClick
     TabOrder = 1
   end
