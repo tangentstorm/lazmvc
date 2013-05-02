@@ -45,6 +45,7 @@
         <Filename Value="uctrlform.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="CtrlForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uCtrlForm"/>
       </Unit1>

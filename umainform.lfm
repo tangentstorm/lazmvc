@@ -8,7 +8,7 @@ object MainForm: TMainForm
   ClientWidth = 216
   OnCreate = FormCreate
   LCLVersion = '1.0.8.0'
-  object ProgressBar1: TProgressBar
+  object volumeMeter: TProgressBar
     Left = 8
     Height = 102
     Top = 16

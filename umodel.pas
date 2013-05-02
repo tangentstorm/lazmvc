@@ -6,15 +6,28 @@ interface
 
 uses Classes, SysUtils, contnrs;
 
-const kChanged = 'CHANGED';
-
+{%region -- Protocol --------------------------------------------------------- }
 type
-
   { IObservable is the main interface that clients care about. }
   IObservable = interface
     procedure AddObserver(obj: TObject);
     procedure removeObserver(obj: TObject);
   end;
+
+  { Notifications are done through message methods and TMessage }
+    TMessage = record
+      id   : string;
+      data : IObservable;
+    end;
+
+  { here is the message to listen for }
+  const
+    kSubjectChanged = 'SUBJECT_CHANGED';
+
+{%endregion}
+
+{%region -- TModel and GModel : Observable Base Classes ---------------------- }
+type
 
   { TModel is just a normal object that's observable through composition. }
   TModel = class(TObject, IObservable)
@@ -36,32 +49,30 @@ type
     constructor Create( val : t );
     property value : t read _value write SetValue;
   end;
+{%endregion}
 
-  { For example, here is a model based an a "percent" type }
-  TPercent = 0 .. 100;
-  TPercentModel = specialize GModel<TPercent>;
+{%region -- Example : TPercentModel -------------------------------------------}
+TPercent = 0 .. 100;
+TPercentModel = specialize GModel<TPercent>;
+{%endregion}
+
 
 implementation
 
-{%region private types}
+{%region _TSubject}
 type
-  TMessage = record
-    id   : string;
-    data : TObject;
-  end;
   _TSubject = class(TInterfacedObject, IObservable)
+  public
+    constructor Create(subj : TObject);
+    destructor Destroy; override;
   protected
     fObservers: TObjectList;
     fSubject  : TObject;
-    constructor Create(subj : TObject);
     procedure AddObserver(obj: TObject);
     procedure RemoveObserver(obj: TObject);
     procedure Notify( msgid : Cardinal );
-    destructor Destroy;
   end;
-{%endregion}
 
-{%region _TSubject}
 constructor _TSubject.Create( subj : TObject );
   begin
     fSubject := subj;
@@ -81,7 +92,7 @@ procedure _TSubject.RemoveObserver(obj : TObject);
 procedure _TSubject.Notify( msgid : cardinal );
   var ob : Pointer; msg : TMessage;
   begin
-    msg.id := kChanged; msg.data := self;
+    msg.id := kSubjectChanged; msg.data := self;
     for ob in fObservers do TObject(ob).DispatchStr( msg );
   end;
 
@@ -100,13 +111,14 @@ constructor TModel.Create;
 
 procedure TModel.notify;
   begin
-    _TSubject(fAsSubject).Notify( 1 );
+    (fAsSubject as _TSubject).Notify( 1 );
   end;
 {%endregion}
 
 {%region GModel}
 constructor GModel.Create( val : t );
   begin
+    inherited Create;
     _value := val;
   end;
 

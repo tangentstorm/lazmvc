@@ -13,13 +13,11 @@ type
   { TMainForm }
   TMainForm = class(TForm)
     SettingsButton: TButton;
-    ProgressBar1: TProgressBar;
+    volumeMeter: TProgressBar;
     procedure FormCreate(Sender: TObject);
     procedure SettingsButtonClick(Sender: TObject);
-  private
-    { private declarations }
   public
-    { public declarations }
+    procedure OnSubjectChange(var msg: TMessage); message kSubjectChanged;
   end;
 
 
@@ -41,9 +39,14 @@ procedure TMainForm.SettingsButtonClick(Sender: TObject);
       end;
   end;
 
+procedure TMainForm.OnSubjectChange(var msg: TMessage);
+  begin
+    volumeMeter.Position := (msg.Data as TPercentModel).value;
+  end;
+
 procedure TMainForm.FormCreate(Sender: TObject);
   begin
-    CtrlForm.percent.asSubject.addObserver(Self);
+    CtrlForm.percent.addObserver(Self);
   end;
 
 end.
