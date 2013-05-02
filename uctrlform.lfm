@@ -1,0 +1,42 @@
+object CtrlForm: TCtrlForm
+  Left = 276
+  Height = 126
+  Top = 17
+  Width = 217
+  Caption = 'CtrlForm'
+  ClientHeight = 126
+  ClientWidth = 217
+  OnClose = FormClose
+  OnCreate = FormCreate
+  LCLVersion = '1.0.8.0'
+  object TrackBar1: TTrackBar
+    Left = 32
+    Height = 108
+    Top = 16
+    Width = 25
+    Max = 100
+    OnChange = TrackBar1Change
+    Orientation = trVertical
+    Position = 25
+    Reversed = True
+    TabOrder = 0
+  end
+  object ProgressBar1: TProgressBar
+    Left = 8
+    Height = 102
+    Top = 16
+    Width = 20
+    Orientation = pbVertical
+    Position = 25
+    TabOrder = 1
+  end
+  object DoneButton: TButton
+    Left = 136
+    Height = 25
+    Top = 93
+    Width = 75
+    Caption = 'Done'
+    OnClick = DoneButtonClick
+    TabOrder = 2
+  end
+end
